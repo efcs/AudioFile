@@ -24,6 +24,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <iterator>
+#include <utility>
 
 //=============================================================
 // Pre-defined 10-byte representations of common sample rates
@@ -590,7 +591,10 @@ bool AudioFile<T>::saveToWaveFile (std::string filePath)
             }
             else if (bitDepth == 16)
             {
-                int16_t sampleAsInt = (int16_t) (samples[channel][i] * (T)32768.);
+                using Lim16 = std::numeric_limits<int16_t>;
+                auto Res = (int)(samples[channel][i] * (T)32768.);
+                int16_t sampleAsInt = static_cast<int16_t>(
+                    std::clamp<int>(Res, Lim16::min(), Lim16::max()));
                 addInt16ToFileData (fileData, sampleAsInt);
             }
             else if (bitDepth == 24)
